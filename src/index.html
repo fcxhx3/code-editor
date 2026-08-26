@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Code Editor</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="sidebar">
+      <div id="sidebar_title"><center>Code Editor</center></div>
+
+      <div id="file_manager">
+          <div id="file_manager_title" onclick="open_files_dialog()" title="Click to open files (Ctrl+O)">
+              Open Files
+          </div>
+
+          <!-- Folders to add in future! -->
+          <!-- <div class="open_folder" data-folderpath="C:\Users\Username\Desktop\Code Editor\src" data-extended="false" onclick="extendFolder(this)">▲ Folder</div> -->
+          
+      </div>
+
+
+      <div id="sidebar_timer"><center>00:00:00</center></div>
+    </div>
+
+    <div id="editor">
+
+      <center><div id="nerd_text">Drop files here or press Ctrl+O</div></center>
+
+    </div>
+
+
+    
+
+    <script src="./js/main.js"></script>
+    <script src="./js/Ace/ace.js" defer></script>
+    <script src="./js/Ace/ext-language_tools.js" defer></script>
+    <script src="./js/Ace/ext-modelist.js" defer></script>
+    <script src="./js/file_manager.js" defer></script>
+    <script src="./js/editor.js" defer></script>
+    <script src="./js/timer.js" defer></script>
+    <script src="./js/hotkeys.js" defer></script>
+  </body>
+</html>

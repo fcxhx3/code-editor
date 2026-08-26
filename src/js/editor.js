@@ -1,0 +1,101 @@
+var editorIsLoaded = false;
+
+var openPath = "";
+var recentlyOpen = [];
+var editor;
+
+
+function findRecent(path) {
+    for (let i = 0; i < recentlyOpen.length; i++) {
+        if (recentlyOpen[i].path === path) {
+            return recentlyOpen[i];
+        }
+    }
+    return null;
+}
+
+
+// Save cursor, scroll and text of the file we are leaving.
+function saveCurrentState() {
+    if (!editor || openPath === "") {
+        return;
+    }
+
+    let entry = findRecent(openPath);
+    if (!entry) {
+        entry = {path: openPath, cursor: null, scrollTop: 0};
+        recentlyOpen.push(entry);
+    }
+    entry.cursor = editor.getCursorPosition();
+    entry.scrollTop = editor.session.getScrollTop();
+
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (open_file_data[i].path === openPath) {
+            open_file_data[i].data = editor.getValue();
+            break;
+        }
+    }
+}
+
+
+function show_to_editor(item) {
+    const path = item.dataset.path;
+
+    if (!editorIsLoaded) {
+        loadEditor();
+        editorIsLoaded = true;
+    } else {
+        saveCurrentState();
+    }
+
+    const previous = findRecent(path);
+
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (open_file_data[i].path === path) {
+            editor.setValue(open_file_data[i].data, -1);
+            break;
+        }
+    }
+
+    // Mode loads async, repaint when it lands or the first file gets no colours.
+    editor.session.setMode(modelist.getModeForPath(path).mode, () => {
+        editor.renderer.updateFull(true);
+    });
+
+    // Ace caches its size, refresh it or scrolling stays dead.
+    editor.resize(true);
+
+    if (previous) {
+        if (previous.cursor) {
+            editor.moveCursorToPosition(previous.cursor);
+            editor.clearSelection();
+        }
+        // Ace scrolls its own viewport, not the div.
+        editor.session.setScrollTop(previous.scrollTop);
+    } else {
+        recentlyOpen.push({path: path, cursor: {row: 0, column: 0}, scrollTop: 0});
+    }
+
+    editor.focus();
+    openPath = path;
+}
+
+
+
+function loadEditor() {
+    ace.require("ace/ext/language_tools");
+    editor = ace.edit("editor");
+    editor.setTheme("ace/theme/tomorrow_night");
+    editor.session.setMode("ace/mode/javascript");
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true,
+        enableLiveAutocompletion: true,
+    });
+    editor.setFontSize(15)
+
+    // Resize with the window.
+    window.addEventListener('resize', () => editor.resize(true));
+
+    console.log("Editor Loaded!");
+}
