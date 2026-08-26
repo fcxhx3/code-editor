@@ -5,6 +5,46 @@ var recentlyOpen = [];
 var editor;
 
 
+// A file is dirty when its text no longer matches what is on disk. The file on
+// screen lives in Ace, the rest live in open_file_data.
+function is_dirty(entry) {
+    if (!entry) {
+        return false;
+    }
+    const current = (entry.path === openPath && editor) ? editor.getValue() : entry.data;
+    return current !== entry.saved;
+}
+
+
+// Names of every file with unsaved changes. The main process calls this on quit.
+function unsaved_file_names() {
+    const names = [];
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (is_dirty(open_file_data[i])) {
+            names.push(open_file_data[i].name);
+        }
+    }
+    return names;
+}
+
+
+// Redraw the sidebar only when the set of dirty files actually changes.
+var lastDirtyKey = "";
+
+function refresh_dirty_marks() {
+    let key = "";
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (is_dirty(open_file_data[i])) {
+            key += open_file_data[i].path + "|";
+        }
+    }
+    if (key !== lastDirtyKey) {
+        lastDirtyKey = key;
+        show_files();
+    }
+}
+
+
 function findRecent(path) {
     for (let i = 0; i < recentlyOpen.length; i++) {
         if (recentlyOpen[i].path === path) {
@@ -135,6 +175,9 @@ function loadEditor() {
         enableLiveAutocompletion: true,
     });
     editor.setFontSize(15)
+
+    // Show and clear the unsaved marker as you type.
+    editor.on('change', refresh_dirty_marks);
 
     // Resize with the window.
     window.addEventListener('resize', () => editor.resize(true));

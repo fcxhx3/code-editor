@@ -69,6 +69,7 @@ body {
   font-size: 1.8vh;
   background-color: #1A443D;
   padding-left: 1vw;
+  position: relative;
 }
 
 .open_file:hover {
@@ -76,10 +77,25 @@ body {
     background-color: #123029;
 }
 
+/* The x and the unsaved marker share one spot, so swapping them cannot shift
+   the filename sideways. */
+.close_file,
+.dirty_marker {
+  position: absolute;
+  right: 0.8vw;
+  top: 0;
+}
+
 .close_file {
-  float: right;
-  padding-right: 0.8vw;
   color: #6F9C90;
+  visibility: hidden;
+}
+
+.dirty_marker {
+  color: #6FE3C0;
+}
+
+.open_file:hover .dirty_marker {
   visibility: hidden;
 }
 

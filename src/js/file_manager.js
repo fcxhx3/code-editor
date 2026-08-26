@@ -33,10 +33,12 @@ function open_file_path(filePath, name) {
     }
 
     try {
+        const text = fs.readFileSync(filePath, 'utf-8');
         open_file_data.push({
             name: name || nodePath.basename(filePath),
             path: filePath,
-            data: fs.readFileSync(filePath, 'utf-8')
+            data: text,
+            saved: text
         });
     } catch (error) {
         console.log(error);
@@ -86,11 +88,29 @@ function open_files_dialog() {
 }
 
 
+// Find an open file by its path.
+function find_open_file(path) {
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (open_file_data[i].path === path) {
+            return open_file_data[i];
+        }
+    }
+    return null;
+}
+
+
 // Close one file. The x on each row calls this.
 function close_file(ev, el) {
     ev.stopPropagation();
 
     const path = el.dataset.path;
+    const entry = find_open_file(path);
+
+    if (entry && is_dirty(entry)) {
+        if (!confirm(entry.name + ' has unsaved changes. Close it anyway?')) {
+            return;
+        }
+    }
 
     for (let i = 0; i < open_file_data.length; i++) {
         if (open_file_data[i].path === path) {
@@ -109,8 +129,10 @@ function show_files() {
 
     for (let i = 0; i < open_file_data.length; i++) {
         const path = open_file_data[i].path;
+        const mark = is_dirty(open_file_data[i]) ? `<span class="dirty_marker" title="Unsaved changes">*</span>` : ``;
         file_manager += `<div class="open_file" data-path="${path}" onclick="show_to_editor(this)">`
             + `<span class="close_file" data-path="${path}" onclick="close_file(event, this)" title="Close">x</span>`
+            + mark
             + `${open_file_data[i].name}</div>`
     }
 

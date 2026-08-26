@@ -34,7 +34,7 @@ npm run make
 
 ### Editing
 - [x] Close a file
-- [ ] Mark files with unsaved changes, and warn before quitting
+- [x] Mark files with unsaved changes, and warn before quitting
 - [ ] Save As
 - [ ] New file
 - [ ] Word wrap toggle

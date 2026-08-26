@@ -9,14 +9,16 @@ function keydown (evt) {
         evt.preventDefault();
 
         if (openPath !== "") {
-            fs.writeFileSync(openPath, editor.getValue());
+            const text = editor.getValue();
+            fs.writeFileSync(openPath, text);
 
-            for (let i = 0; i < open_file_data.length; i++) {
-                if (open_file_data[i].path === openPath) {
-                    open_file_data[i].data = editor.getValue();
-                    break;
-                }
+            const entry = find_open_file(openPath);
+            if (entry) {
+                entry.data = text;
+                entry.saved = text;
             }
+
+            refresh_dirty_marks();
         }
     }
 

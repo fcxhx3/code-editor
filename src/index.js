@@ -20,6 +20,47 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  // Ask before throwing away unsaved work. The renderer knows which files are
+  // dirty, so the answer has to come back from there before the window closes.
+  let allowClose = false;
+
+  mainWindow.on('close', (event) => {
+    if (allowClose) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const quit = () => {
+      allowClose = true;
+      mainWindow.close();
+    };
+
+    mainWindow.webContents.executeJavaScript('unsaved_file_names()').then((names) => {
+      if (!names || names.length === 0) {
+        quit();
+        return;
+      }
+
+      const choice = dialog.showMessageBoxSync(mainWindow, {
+        type: 'warning',
+        buttons: ['Quit anyway', 'Cancel'],
+        defaultId: 1,
+        cancelId: 1,
+        title: 'Unsaved changes',
+        message: 'These files have unsaved changes:',
+        detail: names.join(String.fromCharCode(10))
+      });
+
+      if (choice === 0) {
+        quit();
+      }
+    }).catch(() => {
+      // If the renderer cannot answer, do not trap the user in the window.
+      quit();
+    });
+  });
 };
 
 // File picker for the renderer.
