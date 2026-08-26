@@ -18,6 +18,7 @@ A small desktop code editor built with Electron and the Ace editor.
 | Ctrl+O | Open files |
 | Ctrl+S | Save the current file |
 | Ctrl+Shift+S | Save as |
+| Ctrl+W | Close the current file |
 | Alt+Z | Toggle word wrap |
 
 ## Running it

@@ -147,6 +147,7 @@ function save_file() {
     entry.data = text;
     entry.saved = text;
     refresh_dirty_marks();
+    editor.focus();
 }
 
 
@@ -203,19 +204,8 @@ function save_as() {
 }
 
 
-// Close one file. The x on each row calls this.
-function close_file(ev, el) {
-    ev.stopPropagation();
-
-    const path = el.dataset.path;
-    const entry = find_open_file(path);
-
-    if (entry && is_dirty(entry)) {
-        if (!confirm(entry.name + ' has unsaved changes. Close it anyway?')) {
-            return;
-        }
-    }
-
+// Drop a file from the list and let the editor sort itself out.
+function remove_open_file(path) {
     for (let i = 0; i < open_file_data.length; i++) {
         if (open_file_data[i].path === path) {
             open_file_data.splice(i, 1);
@@ -225,6 +215,46 @@ function close_file(ev, el) {
 
     forget_file(path);
     show_files();
+}
+
+
+// Check before throwing away unsaved work.
+function confirm_close(path) {
+    const entry = find_open_file(path);
+
+    if (entry && is_dirty(entry)) {
+        return confirm(entry.name + ' has unsaved changes. Close it anyway?');
+    }
+
+    return true;
+}
+
+
+// Close one file. The x on each row calls this.
+function close_file(ev, el) {
+    ev.stopPropagation();
+
+    const path = el.dataset.path;
+
+    if (!confirm_close(path)) {
+        return;
+    }
+
+    remove_open_file(path);
+}
+
+
+// Close whatever is on screen. The File menu uses this.
+function close_current_file() {
+    if (openPath === "") {
+        return;
+    }
+
+    if (!confirm_close(openPath)) {
+        return;
+    }
+
+    remove_open_file(openPath);
 }
 
 

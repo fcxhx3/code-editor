@@ -68,6 +68,12 @@ function toggle_word_wrap() {
 
     if (editor) {
         editor.session.setUseWrapMode(wrapEnabled);
+        editor.focus();
+    }
+
+    const button = document.getElementById('wrap_button');
+    if (button) {
+        button.innerText = wrapEnabled ? 'Word Wrap: on' : 'Word Wrap: off';
     }
 }
 

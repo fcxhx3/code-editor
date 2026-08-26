@@ -23,6 +23,14 @@
       <div id="sidebar_timer"><center>00:00:00</center></div>
     </div>
 
+    <div id="toolbar">
+      <button class="tool_button" onclick="new_file()">New</button>
+      <button class="tool_button" onclick="open_files_dialog()">Open</button>
+      <button class="tool_button" onclick="save_file()">Save</button>
+      <button class="tool_button" onclick="save_as()">Save As</button>
+      <button class="tool_button" id="wrap_button" onclick="toggle_word_wrap()">Word Wrap: off</button>
+    </div>
+
     <div id="editor">
 
       <center><div id="nerd_text">Drop files here or press Ctrl+O</div></center>
@@ -39,6 +47,5 @@
     <script src="./js/file_manager.js" defer></script>
     <script src="./js/editor.js" defer></script>
     <script src="./js/timer.js" defer></script>
-    <script src="./js/hotkeys.js" defer></script>
   </body>
 </html>

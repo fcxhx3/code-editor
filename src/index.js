@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 
 
@@ -6,6 +6,45 @@ const path = require('path');
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
 }
+
+// The menu owns the keyboard shortcuts now, so every command has exactly one
+// place it can fire from and the shortcut is written next to it.
+const buildMenu = (mainWindow) => {
+  const call = (code) => () => mainWindow.webContents.executeJavaScript(code);
+
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        { label: 'New File', accelerator: 'CmdOrCtrl+N', click: call('new_file()') },
+        { label: 'Open Files', accelerator: 'CmdOrCtrl+O', click: call('open_files_dialog()') },
+        { type: 'separator' },
+        { label: 'Save', accelerator: 'CmdOrCtrl+S', click: call('save_file()') },
+        { label: 'Save As', accelerator: 'CmdOrCtrl+Shift+S', click: call('save_as()') },
+        { type: 'separator' },
+        { label: 'Close File', accelerator: 'CmdOrCtrl+W', click: call('close_current_file()') },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { label: 'Word Wrap', accelerator: 'Alt+Z', click: call('toggle_word_wrap()') },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'reload' },
+        { role: 'toggleDevTools' }
+      ]
+    }
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+};
+
 
 const createWindow = () => {
   // Create the browser window.
@@ -20,6 +59,8 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  buildMenu(mainWindow);
 
   // Ask before throwing away unsaved work. The renderer knows which files are
   // dirty, so the answer has to come back from there before the window closes.
