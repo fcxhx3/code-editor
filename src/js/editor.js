@@ -39,8 +39,11 @@ function saveCurrentState() {
 
 
 function show_to_editor(item) {
-    const path = item.dataset.path;
+    open_in_editor(item.dataset.path);
+}
 
+
+function open_in_editor(path) {
     if (!editorIsLoaded) {
         loadEditor();
         editorIsLoaded = true;
@@ -80,6 +83,45 @@ function show_to_editor(item) {
     openPath = path;
 }
 
+
+// Forget a file we just closed, and move on if it was the one on screen.
+function forget_file(path) {
+    for (let i = 0; i < recentlyOpen.length; i++) {
+        if (recentlyOpen[i].path === path) {
+            recentlyOpen.splice(i, 1);
+            break;
+        }
+    }
+
+    if (openPath !== path) {
+        return;
+    }
+
+    openPath = "";
+
+    if (open_file_data.length > 0) {
+        open_in_editor(open_file_data[0].path);
+        return;
+    }
+
+    showEmptyState();
+}
+
+
+// Nothing left open, so tear Ace down and put the hint back.
+function showEmptyState() {
+    if (editor) {
+        editor.destroy();
+        editor = null;
+    }
+    editorIsLoaded = false;
+    openPath = "";
+
+    const container = document.getElementById('editor');
+    container.className = "";
+    container.removeAttribute('style');
+    container.innerHTML = '<center><div id="nerd_text">Drop files here or press Ctrl+O</div></center>';
+}
 
 
 function loadEditor() {

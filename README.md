@@ -33,7 +33,7 @@ npm run make
 ## To do
 
 ### Editing
-- [ ] Close a file. Nothing ever removes entries from the open list
+- [x] Close a file
 - [ ] Mark files with unsaved changes, and warn before quitting
 - [ ] Save As
 - [ ] New file

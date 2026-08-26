@@ -76,6 +76,21 @@ body {
     background-color: #123029;
 }
 
+.close_file {
+  float: right;
+  padding-right: 0.8vw;
+  color: #6F9C90;
+  visibility: hidden;
+}
+
+.open_file:hover .close_file {
+  visibility: visible;
+}
+
+.close_file:hover {
+  color: white;
+}
+
 .open_folder {
   width: 14vw;
   height: 2.5vh;

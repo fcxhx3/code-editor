@@ -86,11 +86,32 @@ function open_files_dialog() {
 }
 
 
+// Close one file. The x on each row calls this.
+function close_file(ev, el) {
+    ev.stopPropagation();
+
+    const path = el.dataset.path;
+
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (open_file_data[i].path === path) {
+            open_file_data.splice(i, 1);
+            break;
+        }
+    }
+
+    forget_file(path);
+    show_files();
+}
+
+
 function show_files() {
     let file_manager = `<div id="file_manager_title" onclick="open_files_dialog()" title="Click to open files (Ctrl+O)">Open Files</div>`;
 
     for (let i = 0; i < open_file_data.length; i++) {
-        file_manager += `<div class="open_file" data-path="${open_file_data[i].path}" onclick="show_to_editor(this)">${open_file_data[i].name}</div>`
+        const path = open_file_data[i].path;
+        file_manager += `<div class="open_file" data-path="${path}" onclick="show_to_editor(this)">`
+            + `<span class="close_file" data-path="${path}" onclick="close_file(event, this)" title="Close">x</span>`
+            + `${open_file_data[i].name}</div>`
     }
 
     document.getElementById('file_manager').innerHTML = file_manager;
