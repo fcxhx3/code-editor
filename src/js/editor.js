@@ -45,6 +45,33 @@ function refresh_dirty_marks() {
 }
 
 
+var wrapEnabled = false;
+
+
+// Saved under a new name, so move the bookkeeping across with it.
+function rename_open_path(oldPath, newPath) {
+    for (let i = 0; i < recentlyOpen.length; i++) {
+        if (recentlyOpen[i].path === oldPath) {
+            recentlyOpen[i].path = newPath;
+            break;
+        }
+    }
+
+    if (openPath === oldPath) {
+        openPath = newPath;
+    }
+}
+
+
+function toggle_word_wrap() {
+    wrapEnabled = !wrapEnabled;
+
+    if (editor) {
+        editor.session.setUseWrapMode(wrapEnabled);
+    }
+}
+
+
 function findRecent(path) {
     for (let i = 0; i < recentlyOpen.length; i++) {
         if (recentlyOpen[i].path === path) {
@@ -175,6 +202,7 @@ function loadEditor() {
         enableLiveAutocompletion: true,
     });
     editor.setFontSize(15)
+    editor.session.setUseWrapMode(wrapEnabled);
 
     // Show and clear the unsaved marker as you type.
     editor.on('change', refresh_dirty_marks);

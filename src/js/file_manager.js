@@ -99,6 +99,110 @@ function find_open_file(path) {
 }
 
 
+var untitledCount = 0;
+
+// Start an empty buffer. It has no file on disk until it gets saved.
+function new_file() {
+    untitledCount++;
+    const name = 'untitled-' + untitledCount;
+
+    open_file_data.push({
+        name: name,
+        path: name,
+        data: "",
+        saved: "",
+        untitled: true
+    });
+
+    show_files();
+    open_in_editor(name);
+}
+
+
+// Write the file on screen back to disk.
+function save_file() {
+    if (openPath === "" || !editor) {
+        return;
+    }
+
+    const entry = find_open_file(openPath);
+    if (!entry) {
+        return;
+    }
+
+    if (entry.untitled) {
+        save_as();
+        return;
+    }
+
+    const text = editor.getValue();
+
+    try {
+        fs.writeFileSync(entry.path, text);
+    } catch (error) {
+        console.log(error);
+        return;
+    }
+
+    entry.data = text;
+    entry.saved = text;
+    refresh_dirty_marks();
+}
+
+
+// Ask where to put it, write it there, then follow the file to its new name.
+function save_as() {
+    if (openPath === "" || !editor) {
+        return;
+    }
+
+    const entry = find_open_file(openPath);
+    if (!entry) {
+        return;
+    }
+
+    const text = editor.getValue();
+
+    return ipcRenderer.invoke('save-file-as', entry.name).then((filePath) => {
+        if (!filePath) {
+            return;
+        }
+
+        try {
+            fs.writeFileSync(filePath, text);
+        } catch (error) {
+            console.log(error);
+            return;
+        }
+
+        const oldPath = entry.path;
+
+        // Saving on top of a file that is already open would leave two rows
+        // pointing at the same place.
+        for (let i = open_file_data.length - 1; i >= 0; i--) {
+            if (open_file_data[i] !== entry && open_file_data[i].path === filePath) {
+                open_file_data.splice(i, 1);
+            }
+        }
+
+        entry.path = filePath;
+        entry.name = nodePath.basename(filePath);
+        entry.data = text;
+        entry.saved = text;
+        entry.untitled = false;
+
+        rename_open_path(oldPath, filePath);
+
+        editor.session.setMode(modelist.getModeForPath(filePath).mode, () => {
+            editor.renderer.updateFull(true);
+        });
+
+        show_files();
+        refresh_dirty_marks();
+    });
+}
+
+
 // Close one file. The x on each row calls this.
 function close_file(ev, el) {
     ev.stopPropagation();

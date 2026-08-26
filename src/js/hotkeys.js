@@ -8,18 +8,21 @@ function keydown (evt) {
     if (evt.ctrlKey && (evt.key === 's' || evt.key === 'S')) {
         evt.preventDefault();
 
-        if (openPath !== "") {
-            const text = editor.getValue();
-            fs.writeFileSync(openPath, text);
-
-            const entry = find_open_file(openPath);
-            if (entry) {
-                entry.data = text;
-                entry.saved = text;
-            }
-
-            refresh_dirty_marks();
+        if (evt.shiftKey) {
+            save_as();
+        } else {
+            save_file();
         }
+    }
+
+    if (evt.ctrlKey && (evt.key === 'n' || evt.key === 'N')) {
+        evt.preventDefault();
+        new_file();
+    }
+
+    if (evt.altKey && (evt.key === 'z' || evt.key === 'Z')) {
+        evt.preventDefault();
+        toggle_word_wrap();
     }
 
     if (evt.ctrlKey && (evt.key === 'o' || evt.key === 'O')) {

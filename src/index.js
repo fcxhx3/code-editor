@@ -63,6 +63,18 @@ const createWindow = () => {
   });
 };
 
+// Where should this buffer be written to.
+ipcMain.handle('save-file-as', async (event, suggestedName) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+
+  const result = await dialog.showSaveDialog(win, {
+    title: 'Save as',
+    defaultPath: suggestedName || 'untitled.txt'
+  });
+
+  return result.canceled ? null : result.filePath;
+});
+
 // File picker for the renderer.
 ipcMain.handle('open-files', async (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);

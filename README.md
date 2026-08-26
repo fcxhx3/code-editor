@@ -14,8 +14,11 @@ A small desktop code editor built with Electron and the Ace editor.
 
 | Key | Action |
 | --- | --- |
+| Ctrl+N | New file |
 | Ctrl+O | Open files |
 | Ctrl+S | Save the current file |
+| Ctrl+Shift+S | Save as |
+| Alt+Z | Toggle word wrap |
 
 ## Running it
 
@@ -35,9 +38,9 @@ npm run make
 ### Editing
 - [x] Close a file
 - [x] Mark files with unsaved changes, and warn before quitting
-- [ ] Save As
-- [ ] New file
-- [ ] Word wrap toggle
+- [x] Save As
+- [x] New file
+- [x] Word wrap toggle
 
 ### Search
 - [ ] Find and replace. ext-searchbox.js is already in the project, just not loaded
