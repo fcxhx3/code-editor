@@ -16,11 +16,13 @@ A small desktop code editor built with Electron and the Ace editor.
 | --- | --- |
 | Ctrl+N | New file |
 | Ctrl+O | Open files |
+| Ctrl+Shift+O | Open a folder |
 | Ctrl+S | Save the current file |
 | Ctrl+Shift+S | Save as |
 | Ctrl+W | Close the current file |
 | Ctrl+F | Find |
 | Ctrl+H | Replace |
+| Ctrl+G | Go to line |
 | Alt+Z | Toggle word wrap |
 
 ## Running it
@@ -47,10 +49,10 @@ npm run make
 
 ### Search
 - [x] Find and replace
-- [ ] Jump to line (ext-prompt.js)
+- [x] Jump to line
 
 ### Files
-- [ ] Folder support. The open_folder stub and its CSS are already written
+- [x] Folder support
 - [ ] Show the parent folder when two open files share a name
 - [ ] Refuse binary files. They load as garbled text, and saving one back would corrupt it
 - [ ] Notice when a file changes on disk
@@ -69,7 +71,7 @@ npm run make
 
 ### Tidy up
 - [ ] Rename nerd_text, it no longer matches the text it holds
-- [ ] Finish or delete the commented out folder stub in index.html
+- [x] Finish or delete the commented out folder stub in index.html
 
 ## License
 

@@ -18,6 +18,7 @@ const buildMenu = (mainWindow) => {
       submenu: [
         { label: 'New File', accelerator: 'CmdOrCtrl+N', click: call('new_file()') },
         { label: 'Open Files', accelerator: 'CmdOrCtrl+O', click: call('open_files_dialog()') },
+        { label: 'Open Folder', accelerator: 'CmdOrCtrl+Shift+O', click: call('open_folders_dialog()') },
         { type: 'separator' },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: call('save_file()') },
         { label: 'Save As', accelerator: 'CmdOrCtrl+Shift+S', click: call('save_as()') },
@@ -31,7 +32,9 @@ const buildMenu = (mainWindow) => {
       label: 'Edit',
       submenu: [
         { label: 'Find', accelerator: 'CmdOrCtrl+F', click: call('open_find()') },
-        { label: 'Replace', accelerator: 'CmdOrCtrl+H', click: call('open_replace()') }
+        { label: 'Replace', accelerator: 'CmdOrCtrl+H', click: call('open_replace()') },
+        { type: 'separator' },
+        { label: 'Go to Line', accelerator: 'CmdOrCtrl+G', click: call('open_goto_line()') }
       ]
     },
     {
@@ -121,6 +124,18 @@ ipcMain.handle('save-file-as', async (event, suggestedName) => {
   });
 
   return result.canceled ? null : result.filePath;
+});
+
+// Folder picker for the renderer.
+ipcMain.handle('open-folder', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+
+  const result = await dialog.showOpenDialog(win, {
+    title: 'Open folder',
+    properties: ['openDirectory', 'multiSelections']
+  });
+
+  return result.canceled ? [] : result.filePaths;
 });
 
 // File picker for the renderer.

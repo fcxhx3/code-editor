@@ -29,7 +29,7 @@ body {
 
 #file_manager {
   width: 15vw;
-  height: 50vh;
+  height: 40vh;
   background-color: #173B35;
   margin-top: 5vh;
   overflow-y: scroll;
@@ -61,6 +61,47 @@ body {
 #file_manager_title:hover {
   cursor: pointer;
   background-color: #24705F;
+}
+
+#folder_manager {
+  width: 15vw;
+  height: 45vh;
+  background-color: #173B35;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+}
+
+#folder_manager_title {
+  width: 15vw;
+  height: 4vh;
+  font-size: 2.5vh;
+  background-color: #0F2B27;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+}
+
+#folder_manager_title:hover {
+  background-color: #24705F;
+}
+
+/* Tree rows are indented per depth, so they set their own left padding. */
+.tree_row {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .open_file {
@@ -111,8 +152,12 @@ body {
   width: 14vw;
   height: 2.5vh;
   font-size: 1.8vh;
-  background-color: #1A443D;
+  background-color: #123029;
   padding-left: 1vw;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .open_folder:hover {

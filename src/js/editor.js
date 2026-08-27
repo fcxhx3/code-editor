@@ -73,6 +73,22 @@ function open_find() {
 }
 
 
+// ext-prompt hangs gotoLine off the exported prompt function rather than
+// registering an editor command, and Ace's built-in gotoline uses window.prompt,
+// which Electron does not support.
+function open_goto_line() {
+    if (!editor) {
+        return;
+    }
+
+    const prompt = ace.require('ace/ext/prompt').prompt;
+
+    if (prompt && prompt.gotoLine) {
+        prompt.gotoLine(editor);
+    }
+}
+
+
 function open_replace() {
     if (!editor) {
         return;
