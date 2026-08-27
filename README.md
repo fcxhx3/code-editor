@@ -60,7 +60,7 @@ npm run make
 
 ### Editor extras
 - [ ] Line and column indicator (ext-statusbar.js)
-- [ ] Settings panel for theme and font size (ext-settings_menu.js, ext-themelist.js)
+- [x] Settings panel for theme and font size
 - [ ] Reformat code (ext-beautify.js)
 - [ ] Inline syntax error markers (ext-error_marker.js)
 

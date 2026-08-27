@@ -41,6 +41,7 @@ const buildMenu = (mainWindow) => {
       label: 'View',
       submenu: [
         { label: 'Word Wrap', accelerator: 'Alt+Z', click: call('toggle_word_wrap()') },
+        { label: 'Settings', accelerator: 'CmdOrCtrl+,', click: call('open_settings()') },
         { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },

@@ -98,17 +98,44 @@ function open_replace() {
 }
 
 
-function toggle_word_wrap() {
-    wrapEnabled = !wrapEnabled;
-
+// The settings panel can change wrap too, so the button label is driven off
+// the session rather than off our own variable.
+function sync_wrap_button() {
     if (editor) {
-        editor.session.setUseWrapMode(wrapEnabled);
-        editor.focus();
+        wrapEnabled = editor.session.getUseWrapMode();
     }
 
     const button = document.getElementById('wrap_button');
     if (button) {
         button.innerText = wrapEnabled ? 'Word Wrap: on' : 'Word Wrap: off';
+    }
+}
+
+
+function toggle_word_wrap() {
+    wrapEnabled = !wrapEnabled;
+
+    if (editor) {
+        editor.session.setUseWrapMode(wrapEnabled);
+    editor.session.on('changeWrapMode', sync_wrap_button);
+        editor.focus();
+    }
+
+    sync_wrap_button();
+}
+
+
+// Ace's own settings panel: theme, font size, tab width and the rest.
+function open_settings() {
+    if (!editor) {
+        return;
+    }
+
+    const settings = ace.require('ace/ext/settings_menu');
+
+    if (settings && settings.init) {
+        settings.init(editor);
+        editor.showSettingsMenu();
     }
 }
 
