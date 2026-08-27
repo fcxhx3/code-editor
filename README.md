@@ -59,7 +59,7 @@ npm run make
 - [ ] Reopen the last session's files on start
 
 ### Editor extras
-- [ ] Line and column indicator (ext-statusbar.js)
+- [x] Line and column indicator, plus language and per file time
 - [x] Settings panel for theme and font size
 - [ ] Reformat code (ext-beautify.js)
 - [ ] Inline syntax error markers (ext-error_marker.js)

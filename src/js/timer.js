@@ -246,6 +246,7 @@ function updateTimer() {
 
         bank_file_time();
         refresh_file_times();
+        refresh_status();
     }
 
     const bar = document.getElementById('sidebar_timer');

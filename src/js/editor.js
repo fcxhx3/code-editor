@@ -218,6 +218,7 @@ function open_in_editor(path) {
     editor.focus();
     openPath = path;
     set_active_file(path);
+    refresh_status();
 }
 
 
@@ -255,10 +256,62 @@ function showEmptyState() {
     openPath = "";
     set_active_file("");
 
+    refresh_status();
+
     const container = document.getElementById('editor');
     container.className = "";
     container.removeAttribute('style');
     container.innerHTML = '<center><div id="empty_hint">Drop files here or press Ctrl+O</div></center>';
+}
+
+
+// Ace's own status bar counts rows and columns from zero, which matches neither
+// the gutter nor what anyone expects, so the readout is built here instead.
+function refresh_cursor_status() {
+    const host = document.getElementById('status_ace');
+
+    if (!host) {
+        return;
+    }
+
+    if (!editor || openPath === "") {
+        host.innerText = "";
+        return;
+    }
+
+    const pos = editor.getCursorPosition();
+    let text = 'Ln ' + (pos.row + 1) + ', Col ' + (pos.column + 1);
+
+    const selected = editor.getSelectedText();
+
+    if (selected.length > 0) {
+        text += ' (' + selected.length + ' selected)';
+    }
+
+    host.innerText = text;
+}
+
+
+// The right hand end of the status bar, which Ace does not manage.
+function refresh_status() {
+    const lang = document.getElementById('status_lang');
+    const time = document.getElementById('status_time');
+
+    if (!lang || !time) {
+        return;
+    }
+
+    if (!editor || openPath === "") {
+        lang.innerText = "";
+        time.innerText = "";
+        refresh_cursor_status();
+        return;
+    }
+
+    lang.innerText = editor.session.getMode().$id.replace('ace/mode/', '');
+    time.innerText = file_time_label(openPath);
+
+    refresh_cursor_status();
 }
 
 
@@ -273,6 +326,9 @@ function loadEditor() {
         enableLiveAutocompletion: true,
     });
     editor.setFontSize(15)
+
+    editor.selection.on('changeCursor', refresh_cursor_status);
+    editor.selection.on('changeSelection', refresh_cursor_status);
     editor.session.setUseWrapMode(wrapEnabled);
 
     // The settings panel can change wrap behind our back.
