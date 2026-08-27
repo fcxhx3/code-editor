@@ -28,6 +28,13 @@ const buildMenu = (mainWindow) => {
       ]
     },
     {
+      label: 'Edit',
+      submenu: [
+        { label: 'Find', accelerator: 'CmdOrCtrl+F', click: call('open_find()') },
+        { label: 'Replace', accelerator: 'CmdOrCtrl+H', click: call('open_replace()') }
+      ]
+    },
+    {
       label: 'View',
       submenu: [
         { label: 'Word Wrap', accelerator: 'Alt+Z', click: call('toggle_word_wrap()') },

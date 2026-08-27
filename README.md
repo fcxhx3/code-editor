@@ -19,6 +19,8 @@ A small desktop code editor built with Electron and the Ace editor.
 | Ctrl+S | Save the current file |
 | Ctrl+Shift+S | Save as |
 | Ctrl+W | Close the current file |
+| Ctrl+F | Find |
+| Ctrl+H | Replace |
 | Alt+Z | Toggle word wrap |
 
 ## Running it
@@ -44,7 +46,7 @@ npm run make
 - [x] Word wrap toggle
 
 ### Search
-- [ ] Find and replace. ext-searchbox.js is already in the project, just not loaded
+- [x] Find and replace
 - [ ] Jump to line (ext-prompt.js)
 
 ### Files

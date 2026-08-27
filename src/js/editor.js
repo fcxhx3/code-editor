@@ -63,6 +63,25 @@ function rename_open_path(oldPath, newPath) {
 }
 
 
+// Ace's own search box. Guarded because there is no editor until a file opens.
+function open_find() {
+    if (!editor) {
+        return;
+    }
+
+    editor.execCommand('find');
+}
+
+
+function open_replace() {
+    if (!editor) {
+        return;
+    }
+
+    editor.execCommand('replace');
+}
+
+
 function toggle_word_wrap() {
     wrapEnabled = !wrapEnabled;
 

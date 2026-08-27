@@ -238,3 +238,46 @@ background: #22564A;
 *::after {
   border-radius: 0 !important;
 }
+
+
+/* Ace ships its own search box styling, which is pale grey. Recolour it to
+   match the rest of the window. Layout is left alone. */
+.ace_search {
+  background-color: #0F2B27;
+  border-color: #24705F;
+  color: white;
+}
+
+.ace_search_form,
+.ace_replace_form {
+  border-color: #24705F;
+}
+
+.ace_search_field {
+  background-color: #14332E;
+  color: white;
+  border-color: #24705F;
+}
+
+.ace_searchbtn,
+.ace_replacebtn,
+.ace_button {
+  background-color: #1A443D;
+  color: white;
+  border-color: #24705F;
+}
+
+.ace_searchbtn:hover,
+.ace_replacebtn:hover,
+.ace_button:hover {
+  background-color: #24705F;
+}
+
+.ace_search_counter {
+  color: #6F9C90;
+  background-color: transparent;
+}
+
+.ace_searchbtn_close {
+  background-color: transparent;
+}
