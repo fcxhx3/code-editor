@@ -218,7 +218,6 @@ function open_in_editor(path) {
     editor.focus();
     openPath = path;
     set_active_file(path);
-    refresh_status();
 }
 
 
@@ -256,36 +255,10 @@ function showEmptyState() {
     openPath = "";
     set_active_file("");
 
-    const statusHost = document.getElementById('status_ace');
-    if (statusHost) {
-        statusHost.innerText = "";
-    }
-    refresh_status();
-
     const container = document.getElementById('editor');
     container.className = "";
     container.removeAttribute('style');
     container.innerHTML = '<center><div id="empty_hint">Drop files here or press Ctrl+O</div></center>';
-}
-
-
-// The right hand end of the status bar, which Ace does not manage.
-function refresh_status() {
-    const lang = document.getElementById('status_lang');
-    const time = document.getElementById('status_time');
-
-    if (!lang || !time) {
-        return;
-    }
-
-    if (!editor || openPath === "") {
-        lang.innerText = "";
-        time.innerText = "";
-        return;
-    }
-
-    lang.innerText = editor.session.getMode().$id.replace('ace/mode/', '');
-    time.innerText = file_time_label(openPath);
 }
 
 
@@ -300,14 +273,6 @@ function loadEditor() {
         enableLiveAutocompletion: true,
     });
     editor.setFontSize(15)
-
-    // Ace fills in the cursor position and selection size for us.
-    const StatusBar = ace.require('ace/ext/statusbar').StatusBar;
-    const statusHost = document.getElementById('status_ace');
-
-    if (StatusBar && statusHost) {
-        new StatusBar(editor, statusHost);
-    }
     editor.session.setUseWrapMode(wrapEnabled);
 
     // The settings panel can change wrap behind our back.

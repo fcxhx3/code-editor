@@ -238,32 +238,8 @@ body {
   position: absolute;
   top: 4vh;
   right: 0;
-  bottom: 3vh;
-  left: 15vw;
-}
-
-#statusbar {
-  position: absolute;
   bottom: 0;
   left: 15vw;
-  right: 0;
-  height: 3vh;
-  background-color: #0F2B27;
-  font-size: 1.5vh;
-  color: #6F9C90;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 0.8vw;
-  overflow: hidden;
-  white-space: nowrap;
-  user-select: none;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-}
-
-#status_right span {
-  margin-left: 1.2vw;
 }
 
 
