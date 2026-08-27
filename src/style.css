@@ -111,6 +111,15 @@ body {
   background-color: #1A443D;
   padding-left: 1vw;
   position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file_parent {
+  color: #6F9C90;
+  font-size: 1.4vh;
+  margin-left: 0.5vw;
 }
 
 .open_file:hover {

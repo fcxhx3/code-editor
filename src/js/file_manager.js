@@ -14,6 +14,65 @@ function drag(ev) {
 }
 
 
+var refused_files = [];
+
+
+// Null bytes, or a lot of control characters, mean this is not text. Reading
+// such a file as utf-8 shows garbage, and saving it back would overwrite the
+// original with that garbage.
+function looks_binary(filePath) {
+    const SAMPLE = 8000;
+    let fd;
+
+    try {
+        fd = fs.openSync(filePath, 'r');
+        const chunk = Buffer.alloc(SAMPLE);
+        const read = fs.readSync(fd, chunk, 0, SAMPLE, 0);
+
+        let control = 0;
+
+        for (let i = 0; i < read; i++) {
+            const byte = chunk[i];
+
+            if (byte === 0) {
+                return true;
+            }
+
+            // anything below space that is not tab, newline or carriage return
+            if (byte < 32 && byte !== 9 && byte !== 10 && byte !== 13) {
+                control++;
+            }
+        }
+
+        return read > 0 && (control / read) > 0.1;
+    } catch (error) {
+        console.log(error);
+        return false;
+    } finally {
+        if (fd !== undefined) {
+            try {
+                fs.closeSync(fd);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+}
+
+
+// Say once what was skipped, rather than one popup per file.
+function report_refused() {
+    if (refused_files.length === 0) {
+        return;
+    }
+
+    const names = refused_files.join(', ');
+    refused_files = [];
+
+    alert('Not opened, these look like binary files: ' + names);
+}
+
+
 // Add one file to the list. Returns true if it was added.
 function open_file_path(filePath, name) {
     try {
@@ -30,6 +89,12 @@ function open_file_path(filePath, name) {
         if (open_file_data[i].path === filePath) {
             return false;
         }
+    }
+
+    if (looks_binary(filePath)) {
+        console.log('refusing binary file: ' + filePath);
+        refused_files.push(name || nodePath.basename(filePath));
+        return false;
     }
 
     try {
@@ -66,6 +131,7 @@ function drop(ev) {
     }
 
     show_files();
+    report_refused();
 }
 
 
@@ -84,6 +150,7 @@ function open_files_dialog() {
             open_file_path(paths[i]);
         }
         show_files();
+        report_refused();
     });
 }
 
@@ -382,6 +449,12 @@ function open_from_tree(el) {
 
     open_file_path(path);
     show_files();
+
+    if (refused_files.length > 0) {
+        report_refused();
+        return;
+    }
+
     open_in_editor(path);
 }
 
@@ -421,16 +494,41 @@ function show_folders() {
 }
 
 
+// Two files can easily share a name once folders are involved, so show the
+// containing folder on the ones that clash.
+function file_row_label(entry) {
+    if (entry.untitled) {
+        return entry.name;
+    }
+
+    let sameName = 0;
+
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (open_file_data[i].name === entry.name) {
+            sameName++;
+        }
+    }
+
+    if (sameName < 2) {
+        return entry.name;
+    }
+
+    const parent = nodePath.basename(nodePath.dirname(entry.path));
+
+    return `${entry.name}<span class="file_parent">${parent}</span>`;
+}
+
+
 function show_files() {
     let file_manager = `<div id="file_manager_title" onclick="open_files_dialog()" title="Click to open files (Ctrl+O)">Open Files</div>`;
 
     for (let i = 0; i < open_file_data.length; i++) {
         const path = open_file_data[i].path;
         const mark = is_dirty(open_file_data[i]) ? `<span class="dirty_marker" title="Unsaved changes">*</span>` : ``;
-        file_manager += `<div class="open_file" data-path="${path}" onclick="show_to_editor(this)">`
+        file_manager += `<div class="open_file" data-path="${path}" title="${path}" onclick="show_to_editor(this)">`
             + `<span class="close_file" data-path="${path}" onclick="close_file(event, this)" title="Close">x</span>`
             + mark
-            + `${open_file_data[i].name}</div>`
+            + file_row_label(open_file_data[i]) + `</div>`
     }
 
     document.getElementById('file_manager').innerHTML = file_manager;

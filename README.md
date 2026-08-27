@@ -53,8 +53,8 @@ npm run make
 
 ### Files
 - [x] Folder support
-- [ ] Show the parent folder when two open files share a name
-- [ ] Refuse binary files. They load as garbled text, and saving one back would corrupt it
+- [x] Show the parent folder when two open files share a name
+- [x] Refuse binary files
 - [ ] Notice when a file changes on disk
 - [ ] Reopen the last session's files on start
 
