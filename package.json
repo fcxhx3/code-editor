@@ -16,7 +16,7 @@
     "name": "",
     "email": ""
   },
-  "license": "MIT",
+  "license": "UNLICENSED",
   "config": {
     "forge": {
       "packagerConfig": {},
