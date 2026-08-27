@@ -254,7 +254,7 @@ function showEmptyState() {
     const container = document.getElementById('editor');
     container.className = "";
     container.removeAttribute('style');
-    container.innerHTML = '<center><div id="nerd_text">Drop files here or press Ctrl+O</div></center>';
+    container.innerHTML = '<center><div id="empty_hint">Drop files here or press Ctrl+O</div></center>';
 }
 
 

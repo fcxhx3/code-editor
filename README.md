@@ -70,5 +70,5 @@ npm run make
 - [ ] Track time per file
 
 ### Tidy up
-- [ ] Rename nerd_text, it no longer matches the text it holds
+- [x] Rename nerd_text
 - [x] Finish or delete the commented out folder stub in index.html
