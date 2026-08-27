@@ -519,6 +519,55 @@ function file_row_label(entry) {
 }
 
 
+// Rundown of where the session went, longest first.
+function show_time_summary() {
+    const nl = String.fromCharCode(10);
+
+    if (open_file_data.length === 0) {
+        alert('Nothing open yet, so no time to report.');
+        return;
+    }
+
+    const rows = [];
+
+    for (let i = 0; i < open_file_data.length; i++) {
+        rows.push({
+            name: open_file_data[i].name,
+            seconds: file_time(open_file_data[i].path)
+        });
+    }
+
+    rows.sort((a, b) => b.seconds - a.seconds);
+
+    let total = 0;
+    let text = 'Time per file' + nl + nl;
+
+    for (let i = 0; i < rows.length; i++) {
+        total += rows[i].seconds;
+        text += rows[i].name + '  ' + spell_duration(rows[i].seconds) + nl;
+    }
+
+    text += nl + 'Across all open files: ' + spell_duration(total);
+
+    alert(text);
+}
+
+
+function spell_duration(seconds) {
+    const minutes = Math.floor(seconds / 60);
+
+    if (minutes < 1) {
+        return seconds + 's';
+    }
+
+    if (minutes < 60) {
+        return minutes + 'm ' + padTime(seconds % 60) + 's';
+    }
+
+    return Math.floor(minutes / 60) + 'h ' + padTime(minutes % 60) + 'm';
+}
+
+
 function show_files() {
     let file_manager = `<div id="file_manager_title" onclick="open_files_dialog()" title="Click to open files (Ctrl+O)">Open Files</div>`;
 
@@ -527,6 +576,7 @@ function show_files() {
         const mark = is_dirty(open_file_data[i]) ? `<span class="dirty_marker" title="Unsaved changes">*</span>` : ``;
         file_manager += `<div class="open_file" data-path="${path}" title="${path}" onclick="show_to_editor(this)">`
             + `<span class="close_file" data-path="${path}" onclick="close_file(event, this)" title="Close">x</span>`
+            + `<span class="file_time" title="Time spent in this file">${file_time_label(path)}</span>`
             + mark
             + file_row_label(open_file_data[i]) + `</div>`
     }

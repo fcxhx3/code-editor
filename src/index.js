@@ -43,6 +43,8 @@ const buildMenu = (mainWindow) => {
         { label: 'Word Wrap', accelerator: 'Alt+Z', click: call('toggle_word_wrap()') },
         { label: 'Settings', accelerator: 'CmdOrCtrl+,', click: call('open_settings()') },
         { type: 'separator' },
+        { label: 'Time Per File', click: call('show_time_summary()') },
+        { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
         { role: 'zoomOut' },

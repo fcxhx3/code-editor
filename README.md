@@ -67,7 +67,7 @@ npm run make
 ### Timer
 - [ ] Reset and pause controls
 - [ ] Keep the total across restarts
-- [ ] Track time per file
+- [x] Track time per file
 
 ### Tidy up
 - [x] Rename nerd_text

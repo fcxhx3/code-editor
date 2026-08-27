@@ -127,10 +127,10 @@ body {
     background-color: #123029;
 }
 
-/* The x and the unsaved marker share one spot, so swapping them cannot shift
-   the filename sideways. */
+/* The time sits at the right of a row and steps aside for the x on hover, so
+   the two swapping cannot shift the filename sideways. */
 .close_file,
-.dirty_marker {
+.file_time {
   position: absolute;
   right: 0.8vw;
   top: 0;
@@ -141,12 +141,21 @@ body {
   visibility: hidden;
 }
 
-.dirty_marker {
-  color: #6FE3C0;
+.file_time {
+  color: #5E8A7E;
+  font-size: 1.3vh;
+  top: 0.5vh;
 }
 
-.open_file:hover .dirty_marker {
+.open_file:hover .file_time {
   visibility: hidden;
+}
+
+/* The unsaved marker reads better in front of the name than fighting for the
+   same corner as the other two. */
+.dirty_marker {
+  color: #6FE3C0;
+  margin-right: 0.3vw;
 }
 
 .open_file:hover .close_file {

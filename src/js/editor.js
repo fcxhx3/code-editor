@@ -60,6 +60,8 @@ function rename_open_path(oldPath, newPath) {
     if (openPath === oldPath) {
         openPath = newPath;
     }
+
+    move_file_time(oldPath, newPath);
 }
 
 
@@ -215,6 +217,7 @@ function open_in_editor(path) {
 
     editor.focus();
     openPath = path;
+    set_active_file(path);
 }
 
 
@@ -250,6 +253,7 @@ function showEmptyState() {
     }
     editorIsLoaded = false;
     openPath = "";
+    set_active_file("");
 
     const container = document.getElementById('editor');
     container.className = "";
