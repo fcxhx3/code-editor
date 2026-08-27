@@ -335,3 +335,43 @@ background: #22564A;
 .ace_searchbtn_close {
   background-color: transparent;
 }
+
+
+/* Ace's settings panel ships pale grey, same as the search box did. */
+#ace_settingsmenu {
+  background-color: #0F2B27;
+  color: white;
+  border: 1px solid #24705F;
+}
+
+#ace_settingsmenu table,
+#ace_settingsmenu td,
+#ace_settingsmenu div,
+#ace_settingsmenu label {
+  color: white;
+}
+
+#ace_settingsmenu .ace_optionsMenuEntry:hover {
+  background-color: #1A443D;
+}
+
+#ace_settingsmenu select,
+#ace_settingsmenu input[type="text"],
+#ace_settingsmenu input[type="number"] {
+  background-color: #14332E;
+  color: white;
+  border: 1px solid #24705F;
+}
+
+#ace_settingsmenu button,
+#ace_settingsmenu .ace_closeButton {
+  background-color: #1A443D;
+  color: white;
+  border: 1px solid #24705F;
+  cursor: pointer;
+}
+
+#ace_settingsmenu button:hover,
+#ace_settingsmenu .ace_closeButton:hover {
+  background-color: #24705F;
+}

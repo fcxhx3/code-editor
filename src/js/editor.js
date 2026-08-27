@@ -117,7 +117,6 @@ function toggle_word_wrap() {
 
     if (editor) {
         editor.session.setUseWrapMode(wrapEnabled);
-    editor.session.on('changeWrapMode', sync_wrap_button);
         editor.focus();
     }
 
@@ -271,6 +270,9 @@ function loadEditor() {
     });
     editor.setFontSize(15)
     editor.session.setUseWrapMode(wrapEnabled);
+
+    // The settings panel can change wrap behind our back.
+    editor.session.on('changeWrapMode', sync_wrap_button);
 
     // Show and clear the unsaved marker as you type.
     editor.on('change', refresh_dirty_marks);
