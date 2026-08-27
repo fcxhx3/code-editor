@@ -65,8 +65,8 @@ npm run make
 - [ ] Inline syntax error markers (ext-error_marker.js)
 
 ### Timer
-- [ ] Reset and pause controls
-- [ ] Keep the total across restarts
+- [x] Reset and pause controls
+- [x] Keep the total across restarts
 - [x] Track time per file
 
 ### Tidy up

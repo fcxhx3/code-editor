@@ -44,6 +44,8 @@ const buildMenu = (mainWindow) => {
         { label: 'Settings', accelerator: 'CmdOrCtrl+,', click: call('open_settings()') },
         { type: 'separator' },
         { label: 'Time Per File', click: call('show_time_summary()') },
+        { label: 'Pause Timer', accelerator: 'CmdOrCtrl+T', click: call('toggle_timer()') },
+        { label: 'Reset Timer', click: call('reset_timer()') },
         { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
@@ -86,6 +88,9 @@ const createWindow = () => {
 
     event.preventDefault();
 
+    // Flush the timer totals before anything else can stop the window closing.
+    mainWindow.webContents.executeJavaScript('save_time_state()').catch(() => {});
+
     const quit = () => {
       allowClose = true;
       mainWindow.close();
@@ -127,6 +132,11 @@ ipcMain.handle('save-file-as', async (event, suggestedName) => {
   });
 
   return result.canceled ? null : result.filePath;
+});
+
+// Where the timer totals are kept between runs.
+ipcMain.handle('user-data-path', async () => {
+  return app.getPath('userData');
 });
 
 // Folder picker for the renderer.

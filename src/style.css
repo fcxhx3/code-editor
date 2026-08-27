@@ -116,6 +116,12 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Dimmed while the clock is stopped, so a paused timer does not look like a
+   frozen one. */
+#sidebar_timer.timer_paused {
+  color: #5E8A7E;
+}
+
 .file_parent {
   color: #6F9C90;
   font-size: 1.4vh;
@@ -192,6 +198,7 @@ body {
   height: 5vh;
   background-color: #0F2B27;
   font-size: 3.5vh;
+  cursor: pointer;
   user-select: none;
   -moz-user-select: none;
   -khtml-user-select: none;

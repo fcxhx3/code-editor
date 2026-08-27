@@ -1,4 +1,7 @@
-// Session start. Reset this to restart the timer.
+// Session time is kept as a banked total plus however long the current run has
+// been going. Deriving it that way is what lets the clock be paused.
+var timerBanked = 0;
+var timerRunning = true;
 var timerStartedAt = Date.now();
 
 // Seconds each file has had the editor's attention, keyed by path. A file
@@ -7,9 +10,22 @@ var fileSeconds = {};
 var activePath = "";
 var activeSince = 0;
 
+// Where the totals are written so they survive a restart.
+var timeStatePath = "";
+var ticksSinceSave = 0;
+
 
 function padTime(n) {
     return n < 10 ? "0" + n : String(n);
+}
+
+
+function elapsed_seconds() {
+    if (!timerRunning) {
+        return timerBanked;
+    }
+
+    return timerBanked + Math.floor((Date.now() - timerStartedAt) / 1000);
 }
 
 
@@ -19,7 +35,7 @@ function set_active_file(path) {
     bank_file_time();
 
     activePath = path || "";
-    activeSince = (activePath === "") ? 0 : Date.now();
+    activeSince = (activePath === "" || !timerRunning) ? 0 : Date.now();
 }
 
 
@@ -99,9 +115,124 @@ function refresh_file_times() {
 }
 
 
+function pause_timer() {
+    if (!timerRunning) {
+        return;
+    }
+
+    bank_file_time();
+    timerBanked = elapsed_seconds();
+    timerRunning = false;
+    activeSince = 0;
+
+    save_time_state();
+    redraw_timer();
+}
+
+
+function resume_timer() {
+    if (timerRunning) {
+        return;
+    }
+
+    timerRunning = true;
+    timerStartedAt = Date.now();
+
+    if (activePath !== "") {
+        activeSince = Date.now();
+    }
+
+    redraw_timer();
+}
+
+
+function toggle_timer() {
+    if (timerRunning) {
+        pause_timer();
+    } else {
+        resume_timer();
+    }
+}
+
+
+function reset_timer() {
+    if (!confirm('Reset the clock and every per file total back to zero?')) {
+        return;
+    }
+
+    timerBanked = 0;
+    timerStartedAt = Date.now();
+    fileSeconds = {};
+    activeSince = (activePath === "" || !timerRunning) ? 0 : Date.now();
+
+    save_time_state();
+    redraw_timer();
+    refresh_file_times();
+}
+
+
+function redraw_timer() {
+    updateTimer.lastText = null;
+    updateTimer();
+}
+
+
+// Totals live in the user data folder, so they are not tied to the checkout.
+function load_time_state() {
+    return ipcRenderer.invoke('user-data-path').then((dir) => {
+        if (!dir) {
+            return;
+        }
+
+        timeStatePath = nodePath.join(dir, 'timer-state.json');
+
+        if (!fs.existsSync(timeStatePath)) {
+            return;
+        }
+
+        try {
+            const saved = JSON.parse(fs.readFileSync(timeStatePath, 'utf-8'));
+
+            if (saved && typeof saved.totalSeconds === 'number' && saved.totalSeconds >= 0) {
+                timerBanked = saved.totalSeconds;
+                timerStartedAt = Date.now();
+            }
+
+            if (saved && saved.files && typeof saved.files === 'object') {
+                fileSeconds = saved.files;
+            }
+        } catch (error) {
+            console.log(error);
+        }
+
+        redraw_timer();
+        refresh_file_times();
+    }).catch((error) => {
+        console.log(error);
+    });
+}
+
+
+function save_time_state() {
+    if (timeStatePath === "") {
+        return;
+    }
+
+    bank_file_time();
+
+    try {
+        fs.writeFileSync(timeStatePath, JSON.stringify({
+            totalSeconds: elapsed_seconds(),
+            files: fileSeconds
+        }));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
 function updateTimer() {
-    // Read elapsed time off the clock so late ticks cannot make it drift.
-    const elapsed = Math.floor((Date.now() - timerStartedAt) / 1000);
+    const elapsed = elapsed_seconds();
 
     const hours = Math.floor(elapsed / 3600);
     const minutes = Math.floor((elapsed % 3600) / 60);
@@ -116,13 +247,25 @@ function updateTimer() {
         bank_file_time();
         refresh_file_times();
     }
+
+    const bar = document.getElementById('sidebar_timer');
+    if (bar) {
+        bar.className = timerRunning ? '' : 'timer_paused';
+        bar.title = timerRunning ? 'Click to pause' : 'Paused, click to start again';
+    }
+
+    ticksSinceSave++;
+    if (ticksSinceSave >= 15) {
+        ticksSinceSave = 0;
+        save_time_state();
+    }
 }
 
 
 // Aim each tick just past the next whole second.
 function scheduleNextTick() {
-    const elapsed = Date.now() - timerStartedAt;
-    const msIntoSecond = ((elapsed % 1000) + 1000) % 1000;
+    const now = Date.now();
+    const msIntoSecond = timerRunning ? (((now - timerStartedAt) % 1000) + 1000) % 1000 : 0;
 
     setTimeout(() => {
         updateTimer();
@@ -133,3 +276,4 @@ function scheduleNextTick() {
 
 updateTimer();
 scheduleNextTick();
+load_time_state();
