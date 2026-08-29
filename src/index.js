@@ -23,6 +23,8 @@ const buildMenu = (mainWindow) => {
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: call('save_file()') },
         { label: 'Save As', accelerator: 'CmdOrCtrl+Shift+S', click: call('save_as()') },
         { type: 'separator' },
+        { label: 'Reload From Disk', click: call('reload_current_file()') },
+        { type: 'separator' },
         { label: 'Close File', accelerator: 'CmdOrCtrl+W', click: call('close_current_file()') },
         { type: 'separator' },
         { role: 'quit' }
@@ -89,7 +91,7 @@ const createWindow = () => {
     event.preventDefault();
 
     // Flush the timer totals before anything else can stop the window closing.
-    mainWindow.webContents.executeJavaScript('save_time_state()').catch(() => {});
+    mainWindow.webContents.executeJavaScript('save_time_state(); save_session();').catch(() => {});
 
     const quit = () => {
       allowClose = true;

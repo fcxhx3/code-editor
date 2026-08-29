@@ -219,6 +219,7 @@ function open_in_editor(path) {
     openPath = path;
     set_active_file(path);
     refresh_status();
+    save_session();
 }
 
 
@@ -304,12 +305,32 @@ function refresh_status() {
     if (!editor || openPath === "") {
         lang.innerText = "";
         time.innerText = "";
+
+        const idle = document.getElementById('status_disk');
+        if (idle) {
+            idle.innerText = "";
+        }
+
         refresh_cursor_status();
         return;
     }
 
     lang.innerText = editor.session.getMode().$id.replace('ace/mode/', '');
     time.innerText = file_time_label(openPath);
+
+    const disk = document.getElementById('status_disk');
+
+    if (disk) {
+        const entry = find_open_file(openPath);
+
+        if (entry && entry.missing) {
+            disk.innerText = 'gone from disk';
+        } else if (entry && entry.diskChanged) {
+            disk.innerText = 'changed on disk';
+        } else {
+            disk.innerText = '';
+        }
+    }
 
     refresh_cursor_status();
 }

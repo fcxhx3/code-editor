@@ -164,6 +164,16 @@ body {
   margin-right: 0.3vw;
 }
 
+/* Warm against all the green, so a file that moved under you stands out. */
+.disk_marker {
+  color: #E3B36F;
+  margin-right: 0.3vw;
+}
+
+#status_disk {
+  color: #E3B36F;
+}
+
 .open_file:hover .close_file {
   visibility: visible;
 }

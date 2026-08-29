@@ -55,8 +55,8 @@ npm run make
 - [x] Folder support
 - [x] Show the parent folder when two open files share a name
 - [x] Refuse binary files
-- [ ] Notice when a file changes on disk
-- [ ] Reopen the last session's files on start
+- [x] Notice when a file changes on disk
+- [x] Reopen the last session's files on start
 
 ### Editor extras
 - [x] Line and column indicator, plus language and per file time

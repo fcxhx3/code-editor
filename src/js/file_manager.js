@@ -73,6 +73,126 @@ function report_refused() {
 }
 
 
+// Enough to tell whether the file has been written since we last read it.
+function stat_signature(filePath) {
+    try {
+        const info = fs.statSync(filePath);
+        return info.mtimeMs + ':' + info.size;
+    } catch (error) {
+        return "";
+    }
+}
+
+
+// Pull the file back off disk. Cursor and scroll are put back afterwards so a
+// reload does not throw away where you were.
+function reload_from_disk(entry) {
+    let text;
+
+    try {
+        text = fs.readFileSync(entry.path, 'utf-8');
+    } catch (error) {
+        console.log(error);
+        entry.missing = true;
+        return false;
+    }
+
+    entry.data = text;
+    entry.saved = text;
+    entry.disk = stat_signature(entry.path);
+    entry.diskChanged = false;
+    entry.missing = false;
+
+    if (entry.path === openPath && editor) {
+        const cursor = editor.getCursorPosition();
+        const scroll = editor.session.getScrollTop();
+
+        editor.setValue(text, -1);
+        editor.moveCursorToPosition(cursor);
+        editor.clearSelection();
+        editor.session.setScrollTop(scroll);
+    }
+
+    return true;
+}
+
+
+// A file with no unsaved edits is reloaded quietly, since there is nothing to
+// lose. One that has been edited here is only flagged, and left alone.
+function check_disk_changes() {
+    let touched = false;
+
+    for (let i = 0; i < open_file_data.length; i++) {
+        const entry = open_file_data[i];
+
+        if (entry.untitled) {
+            continue;
+        }
+
+        const now = stat_signature(entry.path);
+
+        if (now === entry.disk) {
+            if (entry.diskChanged || entry.missing) {
+                entry.diskChanged = false;
+                entry.missing = false;
+                touched = true;
+            }
+            continue;
+        }
+
+        if (now === "") {
+            if (!entry.missing) {
+                entry.missing = true;
+                entry.diskChanged = true;
+                touched = true;
+            }
+            continue;
+        }
+
+        if (!is_dirty(entry)) {
+            reload_from_disk(entry);
+            touched = true;
+        } else if (!entry.diskChanged) {
+            entry.diskChanged = true;
+            entry.missing = false;
+            touched = true;
+        }
+    }
+
+    if (touched) {
+        show_files();
+        refresh_status();
+    }
+}
+
+
+// Reload whatever is on screen, asking first if it would discard edits.
+function reload_current_file() {
+    if (openPath === "") {
+        return;
+    }
+
+    const entry = find_open_file(openPath);
+
+    if (!entry) {
+        return;
+    }
+
+    if (is_dirty(entry) && !confirm('Throw away the unsaved changes in ' + entry.name + ' and reload it from disk?')) {
+        return;
+    }
+
+    if (reload_from_disk(entry)) {
+        show_files();
+        refresh_status();
+    }
+}
+
+
+setInterval(check_disk_changes, 3000);
+window.addEventListener('focus', check_disk_changes);
+
+
 // Add one file to the list. Returns true if it was added.
 function open_file_path(filePath, name) {
     try {
@@ -103,7 +223,8 @@ function open_file_path(filePath, name) {
             name: name || nodePath.basename(filePath),
             path: filePath,
             data: text,
-            saved: text
+            saved: text,
+            disk: stat_signature(filePath)
         });
     } catch (error) {
         console.log(error);
@@ -202,6 +323,10 @@ function save_file() {
         return;
     }
 
+    if (entry.diskChanged && !confirm(entry.name + ' has changed on disk since you opened it. Overwrite what is there now?')) {
+        return;
+    }
+
     const text = editor.getValue();
 
     try {
@@ -213,7 +338,12 @@ function save_file() {
 
     entry.data = text;
     entry.saved = text;
+    entry.disk = stat_signature(entry.path);
+    entry.diskChanged = false;
+    entry.missing = false;
+
     refresh_dirty_marks();
+    refresh_status();
     editor.focus();
 }
 
@@ -258,6 +388,9 @@ function save_as() {
         entry.data = text;
         entry.saved = text;
         entry.untitled = false;
+        entry.disk = stat_signature(filePath);
+        entry.diskChanged = false;
+        entry.missing = false;
 
         rename_open_path(oldPath, filePath);
 
@@ -326,6 +459,85 @@ function close_current_file() {
 
 
 var open_folder_data = [];
+
+// Which files were open last time, so they can be put back.
+var sessionPath = "";
+var restoringSession = false;
+
+
+function save_session() {
+    if (sessionPath === "" || restoringSession) {
+        return;
+    }
+
+    const paths = [];
+
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (!open_file_data[i].untitled) {
+            paths.push(open_file_data[i].path);
+        }
+    }
+
+    try {
+        fs.writeFileSync(sessionPath, JSON.stringify({files: paths, active: openPath}));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+// Anything that has since been deleted, moved or turned binary is skipped
+// quietly rather than complained about on startup.
+function load_session() {
+    return ipcRenderer.invoke('user-data-path').then((dir) => {
+        if (!dir) {
+            return;
+        }
+
+        sessionPath = nodePath.join(dir, 'session.json');
+
+        if (!fs.existsSync(sessionPath)) {
+            return;
+        }
+
+        let saved;
+
+        try {
+            saved = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
+        } catch (error) {
+            console.log(error);
+            return;
+        }
+
+        if (!saved || !saved.files || saved.files.length === 0) {
+            return;
+        }
+
+        restoringSession = true;
+
+        let opened = 0;
+
+        for (let i = 0; i < saved.files.length; i++) {
+            if (open_file_path(saved.files[i])) {
+                opened++;
+            }
+        }
+
+        refused_files = [];
+        restoringSession = false;
+
+        if (opened === 0) {
+            return;
+        }
+
+        show_files();
+
+        const wanted = (saved.active && find_open_file(saved.active)) ? saved.active : open_file_data[0].path;
+        open_in_editor(wanted);
+    }).catch((error) => {
+        console.log(error);
+    });
+}
 
 
 // Ask for a folder and add it to the tree.
@@ -573,7 +785,18 @@ function show_files() {
 
     for (let i = 0; i < open_file_data.length; i++) {
         const path = open_file_data[i].path;
-        const mark = is_dirty(open_file_data[i]) ? `<span class="dirty_marker" title="Unsaved changes">*</span>` : ``;
+        const entry = open_file_data[i];
+        let mark = ``;
+
+        if (entry.missing) {
+            mark += `<span class="disk_marker" title="No longer on disk">!</span>`;
+        } else if (entry.diskChanged) {
+            mark += `<span class="disk_marker" title="Changed on disk">!</span>`;
+        }
+
+        if (is_dirty(entry)) {
+            mark += `<span class="dirty_marker" title="Unsaved changes">*</span>`;
+        }
         file_manager += `<div class="open_file" data-path="${path}" title="${path}" onclick="show_to_editor(this)">`
             + `<span class="close_file" data-path="${path}" onclick="close_file(event, this)" title="Close">x</span>`
             + `<span class="file_time" title="Time spent in this file">${file_time_label(path)}</span>`
@@ -582,4 +805,9 @@ function show_files() {
     }
 
     document.getElementById('file_manager').innerHTML = file_manager;
+
+    save_session();
 }
+
+
+load_session();
