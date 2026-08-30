@@ -80,6 +80,31 @@ function open_find() {
 // which Electron does not support.
 // ext-beautify registers a command but never attaches it to the editor, so
 // execCommand('beautify') quietly does nothing. Call the module instead.
+// Unlike the prompt and beautify extensions, error_marker does attach its
+// commands to the editor, so execCommand is the right way in here.
+function next_problem() {
+    if (!editor) {
+        return;
+    }
+
+    editor.execCommand('goToNextError');
+}
+
+
+function previous_problem() {
+    if (!editor) {
+        return;
+    }
+
+    editor.execCommand('goToPreviousError');
+}
+
+
+function count_label(n, word) {
+    return n + ' ' + word + (n === 1 ? '' : 's');
+}
+
+
 function reformat_code() {
     if (!editor) {
         return;
@@ -329,12 +354,46 @@ function refresh_status() {
             idle.innerText = "";
         }
 
+        const idleProblems = document.getElementById('status_problems');
+        if (idleProblems) {
+            idleProblems.innerText = "";
+        }
+
         refresh_cursor_status();
         return;
     }
 
     lang.innerText = editor.session.getMode().$id.replace('ace/mode/', '');
     time.innerText = file_time_label(openPath);
+
+    const problems = document.getElementById('status_problems');
+
+    if (problems) {
+        const notes = editor.session.getAnnotations();
+        let errors = 0;
+        let warnings = 0;
+
+        for (let i = 0; i < notes.length; i++) {
+            if (notes[i].type === 'error') {
+                errors++;
+            } else if (notes[i].type === 'warning') {
+                warnings++;
+            }
+        }
+
+        const parts = [];
+
+        if (errors > 0) {
+            parts.push(count_label(errors, 'error'));
+        }
+
+        if (warnings > 0) {
+            parts.push(count_label(warnings, 'warning'));
+        }
+
+        problems.innerText = parts.join(', ');
+        problems.className = errors > 0 ? 'has_errors' : '';
+    }
 
     const disk = document.getElementById('status_disk');
 
@@ -366,6 +425,7 @@ function loadEditor() {
     });
     editor.setFontSize(15)
 
+    editor.session.on('changeAnnotation', refresh_status);
     editor.selection.on('changeCursor', refresh_cursor_status);
     editor.selection.on('changeSelection', refresh_cursor_status);
     editor.session.setUseWrapMode(wrapEnabled);

@@ -38,7 +38,10 @@ const buildMenu = (mainWindow) => {
         { type: 'separator' },
         { label: 'Go to Line', accelerator: 'CmdOrCtrl+G', click: call('open_goto_line()') },
         { type: 'separator' },
-        { label: 'Reformat', accelerator: 'Shift+Alt+F', click: call('reformat_code()') }
+        { label: 'Reformat', accelerator: 'Shift+Alt+F', click: call('reformat_code()') },
+        { type: 'separator' },
+        { label: 'Next Problem', accelerator: 'Alt+E', click: call('next_problem()') },
+        { label: 'Previous Problem', accelerator: 'Shift+Alt+E', click: call('previous_problem()') }
       ]
     },
     {

@@ -24,6 +24,8 @@ A small desktop code editor built with Electron and the Ace editor.
 | Ctrl+H | Replace |
 | Ctrl+G | Go to line |
 | Shift+Alt+F | Reformat the file |
+| Alt+E | Jump to the next problem |
+| Shift+Alt+E | Jump to the previous problem |
 | Alt+Z | Toggle word wrap |
 
 ## Running it
@@ -63,7 +65,7 @@ npm run make
 - [x] Line and column indicator, plus language and per file time
 - [x] Settings panel for theme and font size
 - [x] Reformat code
-- [ ] Inline syntax error markers (ext-error_marker.js)
+- [x] Inline syntax error markers, with jump to next problem
 
 ### Timer
 - [x] Reset and pause controls
