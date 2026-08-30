@@ -23,6 +23,7 @@ A small desktop code editor built with Electron and the Ace editor.
 | Ctrl+F | Find |
 | Ctrl+H | Replace |
 | Ctrl+G | Go to line |
+| Shift+Alt+F | Reformat the file |
 | Alt+Z | Toggle word wrap |
 
 ## Running it
@@ -61,7 +62,7 @@ npm run make
 ### Editor extras
 - [x] Line and column indicator, plus language and per file time
 - [x] Settings panel for theme and font size
-- [ ] Reformat code (ext-beautify.js)
+- [x] Reformat code
 - [ ] Inline syntax error markers (ext-error_marker.js)
 
 ### Timer

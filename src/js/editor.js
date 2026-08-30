@@ -78,6 +78,24 @@ function open_find() {
 // ext-prompt hangs gotoLine off the exported prompt function rather than
 // registering an editor command, and Ace's built-in gotoline uses window.prompt,
 // which Electron does not support.
+// ext-beautify registers a command but never attaches it to the editor, so
+// execCommand('beautify') quietly does nothing. Call the module instead.
+function reformat_code() {
+    if (!editor) {
+        return;
+    }
+
+    const beautify = ace.require('ace/ext/beautify');
+
+    if (!beautify || typeof beautify.beautify !== 'function') {
+        return;
+    }
+
+    beautify.beautify(editor.session);
+    editor.focus();
+}
+
+
 function open_goto_line() {
     if (!editor) {
         return;

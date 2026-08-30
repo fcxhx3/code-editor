@@ -36,7 +36,9 @@ const buildMenu = (mainWindow) => {
         { label: 'Find', accelerator: 'CmdOrCtrl+F', click: call('open_find()') },
         { label: 'Replace', accelerator: 'CmdOrCtrl+H', click: call('open_replace()') },
         { type: 'separator' },
-        { label: 'Go to Line', accelerator: 'CmdOrCtrl+G', click: call('open_goto_line()') }
+        { label: 'Go to Line', accelerator: 'CmdOrCtrl+G', click: call('open_goto_line()') },
+        { type: 'separator' },
+        { label: 'Reformat', accelerator: 'Shift+Alt+F', click: call('reformat_code()') }
       ]
     },
     {
