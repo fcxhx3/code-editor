@@ -103,14 +103,13 @@ function reload_from_disk(entry) {
     entry.diskChanged = false;
     entry.missing = false;
 
-    if (entry.path === openPath && editor) {
-        const cursor = editor.getCursorPosition();
-        const scroll = editor.session.getScrollTop();
+    if (entry.session) {
+        const cursor = entry.session.selection.getCursor();
+        const scroll = entry.session.getScrollTop();
 
-        editor.setValue(text, -1);
-        editor.moveCursorToPosition(cursor);
-        editor.clearSelection();
-        editor.session.setScrollTop(scroll);
+        entry.session.setValue(text);
+        entry.session.selection.moveToPosition(cursor);
+        entry.session.setScrollTop(scroll);
     }
 
     return true;
@@ -327,7 +326,7 @@ function save_file() {
         return;
     }
 
-    const text = editor.getValue();
+    const text = file_text(entry);
 
     try {
         fs.writeFileSync(entry.path, text);
@@ -359,7 +358,7 @@ function save_as() {
         return;
     }
 
-    const text = editor.getValue();
+    const text = file_text(entry);
 
     return ipcRenderer.invoke('save-file-as', entry.name).then((filePath) => {
         if (!filePath) {
@@ -406,8 +405,11 @@ function save_as() {
 
 // Drop a file from the list and let the editor sort itself out.
 function remove_open_file(path) {
+    let removed = null;
+
     for (let i = 0; i < open_file_data.length; i++) {
         if (open_file_data[i].path === path) {
+            removed = open_file_data[i];
             open_file_data.splice(i, 1);
             break;
         }
@@ -415,6 +417,12 @@ function remove_open_file(path) {
 
     forget_file(path);
     show_files();
+
+    // Only once the editor has moved on, so it never holds a dead session.
+    if (removed && removed.session) {
+        removed.session.destroy();
+        removed.session = null;
+    }
 }
 
 

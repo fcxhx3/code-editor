@@ -1,18 +1,56 @@
 var editorIsLoaded = false;
 
 var openPath = "";
-var recentlyOpen = [];
 var editor;
 
 
-// A file is dirty when its text no longer matches what is on disk. The file on
-// screen lives in Ace, the rest live in open_file_data.
+// Every open file owns an Ace session holding its text, undo history, cursor
+// and scroll position. Once a session exists it is the live copy, and
+// entry.data is only the text the file was opened with.
+function file_text(entry) {
+    if (!entry) {
+        return "";
+    }
+
+    return entry.session ? entry.session.getValue() : entry.data;
+}
+
+
+// Built on demand, since a file in the list may never be looked at.
+function session_for(entry) {
+    if (entry.session) {
+        return entry.session;
+    }
+
+    const session = ace.createEditSession(entry.data);
+
+    session.setMode(modelist.getModeForPath(entry.path).mode, () => {
+        if (editor && editor.session === session) {
+            editor.renderer.updateFull(true);
+        }
+    });
+
+    session.setUseWrapMode(wrapEnabled);
+
+    session.on('change', refresh_dirty_marks);
+    session.on('changeAnnotation', refresh_status);
+    session.on('changeWrapMode', sync_wrap_button);
+    session.selection.on('changeCursor', refresh_cursor_status);
+    session.selection.on('changeSelection', refresh_cursor_status);
+
+    entry.session = session;
+
+    return session;
+}
+
+
+// A file is dirty when its text no longer matches what is on disk.
 function is_dirty(entry) {
     if (!entry) {
         return false;
     }
-    const current = (entry.path === openPath && editor) ? editor.getValue() : entry.data;
-    return current !== entry.saved;
+
+    return file_text(entry) !== entry.saved;
 }
 
 
@@ -50,11 +88,14 @@ var wrapEnabled = false;
 
 // Saved under a new name, so move the bookkeeping across with it.
 function rename_open_path(oldPath, newPath) {
-    for (let i = 0; i < recentlyOpen.length; i++) {
-        if (recentlyOpen[i].path === oldPath) {
-            recentlyOpen[i].path = newPath;
-            break;
-        }
+    const entry = find_open_file(newPath) || find_open_file(oldPath);
+
+    if (entry && entry.session) {
+        entry.session.setMode(modelist.getModeForPath(newPath).mode, () => {
+            if (editor && editor.session === entry.session) {
+                editor.renderer.updateFull(true);
+            }
+        });
     }
 
     if (openPath === oldPath) {
@@ -160,8 +201,13 @@ function sync_wrap_button() {
 function toggle_word_wrap() {
     wrapEnabled = !wrapEnabled;
 
+    for (let i = 0; i < open_file_data.length; i++) {
+        if (open_file_data[i].session) {
+            open_file_data[i].session.setUseWrapMode(wrapEnabled);
+        }
+    }
+
     if (editor) {
-        editor.session.setUseWrapMode(wrapEnabled);
         editor.focus();
     }
 
@@ -184,79 +230,30 @@ function open_settings() {
 }
 
 
-function findRecent(path) {
-    for (let i = 0; i < recentlyOpen.length; i++) {
-        if (recentlyOpen[i].path === path) {
-            return recentlyOpen[i];
-        }
-    }
-    return null;
-}
-
-
-// Save cursor, scroll and text of the file we are leaving.
-function saveCurrentState() {
-    if (!editor || openPath === "") {
-        return;
-    }
-
-    let entry = findRecent(openPath);
-    if (!entry) {
-        entry = {path: openPath, cursor: null, scrollTop: 0};
-        recentlyOpen.push(entry);
-    }
-    entry.cursor = editor.getCursorPosition();
-    entry.scrollTop = editor.session.getScrollTop();
-
-    for (let i = 0; i < open_file_data.length; i++) {
-        if (open_file_data[i].path === openPath) {
-            open_file_data[i].data = editor.getValue();
-            break;
-        }
-    }
-}
-
-
 function show_to_editor(item) {
     open_in_editor(item.dataset.path);
 }
 
 
+// Handing Ace a different session swaps the text, undo history, cursor and
+// scroll in one move. Nothing needs saving off first, and undo can no longer
+// reach past the start of the file you are looking at.
 function open_in_editor(path) {
     if (!editorIsLoaded) {
         loadEditor();
         editorIsLoaded = true;
-    } else {
-        saveCurrentState();
     }
 
-    const previous = findRecent(path);
+    const entry = find_open_file(path);
 
-    for (let i = 0; i < open_file_data.length; i++) {
-        if (open_file_data[i].path === path) {
-            editor.setValue(open_file_data[i].data, -1);
-            break;
-        }
+    if (!entry) {
+        return;
     }
 
-    // Mode loads async, repaint when it lands or the first file gets no colours.
-    editor.session.setMode(modelist.getModeForPath(path).mode, () => {
-        editor.renderer.updateFull(true);
-    });
+    editor.setSession(session_for(entry));
 
     // Ace caches its size, refresh it or scrolling stays dead.
     editor.resize(true);
-
-    if (previous) {
-        if (previous.cursor) {
-            editor.moveCursorToPosition(previous.cursor);
-            editor.clearSelection();
-        }
-        // Ace scrolls its own viewport, not the div.
-        editor.session.setScrollTop(previous.scrollTop);
-    } else {
-        recentlyOpen.push({path: path, cursor: {row: 0, column: 0}, scrollTop: 0});
-    }
 
     editor.focus();
     openPath = path;
@@ -268,13 +265,6 @@ function open_in_editor(path) {
 
 // Forget a file we just closed, and move on if it was the one on screen.
 function forget_file(path) {
-    for (let i = 0; i < recentlyOpen.length; i++) {
-        if (recentlyOpen[i].path === path) {
-            recentlyOpen.splice(i, 1);
-            break;
-        }
-    }
-
     if (openPath !== path) {
         return;
     }
@@ -417,24 +407,12 @@ function loadEditor() {
     ace.require("ace/ext/language_tools");
     editor = ace.edit("editor");
     editor.setTheme("ace/theme/tomorrow_night");
-    editor.session.setMode("ace/mode/javascript");
     editor.setOptions({
         enableBasicAutocompletion: true,
         enableSnippets: true,
         enableLiveAutocompletion: true,
     });
     editor.setFontSize(15)
-
-    editor.session.on('changeAnnotation', refresh_status);
-    editor.selection.on('changeCursor', refresh_cursor_status);
-    editor.selection.on('changeSelection', refresh_cursor_status);
-    editor.session.setUseWrapMode(wrapEnabled);
-
-    // The settings panel can change wrap behind our back.
-    editor.session.on('changeWrapMode', sync_wrap_button);
-
-    // Show and clear the unsaved marker as you type.
-    editor.on('change', refresh_dirty_marks);
 
     // Resize with the window.
     window.addEventListener('resize', () => editor.resize(true));
