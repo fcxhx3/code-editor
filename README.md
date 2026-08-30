@@ -27,6 +27,7 @@ A small desktop code editor built with Electron and the Ace editor.
 | Alt+E | Jump to the next problem |
 | Shift+Alt+E | Jump to the previous problem |
 | Alt+Z | Toggle word wrap |
+| Ctrl+\ | Split the editor in two |
 
 ## Running it
 
@@ -66,6 +67,8 @@ npm run make
 - [x] Settings panel for theme and font size
 - [x] Reformat code
 - [x] Inline syntax error markers, with jump to next problem
+- [x] Keybinding presets for vim, emacs, sublime and vs code
+- [x] Split view, two files side by side
 
 ### Timer
 - [x] Reset and pause controls

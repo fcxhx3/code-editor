@@ -48,6 +48,17 @@ const buildMenu = (mainWindow) => {
       label: 'View',
       submenu: [
         { label: 'Word Wrap', accelerator: 'Alt+Z', click: call('toggle_word_wrap()') },
+        { label: 'Split Editor', accelerator: 'CmdOrCtrl+\\', click: call('toggle_split()') },
+        {
+          label: 'Keybindings',
+          submenu: [
+            { label: 'Default', type: 'radio', checked: true, click: call("set_keybindings('')") },
+            { label: 'Vim', type: 'radio', click: call("set_keybindings('vim')") },
+            { label: 'Emacs', type: 'radio', click: call("set_keybindings('emacs')") },
+            { label: 'Sublime Text', type: 'radio', click: call("set_keybindings('sublime')") },
+            { label: 'VS Code', type: 'radio', click: call("set_keybindings('vscode')") }
+          ]
+        },
         { label: 'Settings', accelerator: 'CmdOrCtrl+,', click: call('open_settings()') },
         { type: 'separator' },
         { label: 'Time Per File', click: call('show_time_summary()') },

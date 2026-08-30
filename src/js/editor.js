@@ -1,4 +1,5 @@
 var editorIsLoaded = false;
+var editorSplit = null;
 
 var openPath = "";
 var editor;
@@ -84,6 +85,36 @@ function refresh_dirty_marks() {
 
 
 var wrapEnabled = false;
+
+// Empty means Ace's own bindings. The rest are loaded from basePath on demand,
+// so the keybinding files need no script tags.
+var keyboardPreset = "";
+
+
+function set_keybindings(name) {
+    keyboardPreset = name || "";
+
+    if (editorSplit) {
+        for (let i = 0; i < editorSplit.getSplits(); i++) {
+            apply_keybindings(editorSplit.getEditor(i));
+        }
+    } else {
+        apply_keybindings(editor);
+    }
+
+    if (editor) {
+        editor.focus();
+    }
+}
+
+
+function apply_keybindings(pane) {
+    if (!pane) {
+        return;
+    }
+
+    pane.setKeyboardHandler(keyboardPreset ? 'ace/keyboard/' + keyboardPreset : null);
+}
 
 
 // Saved under a new name, so move the bookkeeping across with it.
@@ -282,10 +313,13 @@ function forget_file(path) {
 
 // Nothing left open, so tear Ace down and put the hint back.
 function showEmptyState() {
-    if (editor) {
-        editor.destroy();
-        editor = null;
+    if (editorSplit) {
+        editorSplit.setSplits(1);
+        editorSplit.getEditor(0).destroy();
+        editorSplit = null;
     }
+
+    editor = null;
     editorIsLoaded = false;
     openPath = "";
     set_active_file("");
@@ -403,19 +437,76 @@ function refresh_status() {
 }
 
 
-function loadEditor() {
-    ace.require("ace/ext/language_tools");
-    editor = ace.edit("editor");
-    editor.setTheme("ace/theme/tomorrow_night");
-    editor.setOptions({
+// Everything a pane needs, applied to the second one as well when it appears.
+function configure_pane(pane) {
+    pane.setOptions({
         enableBasicAutocompletion: true,
         enableSnippets: true,
         enableLiveAutocompletion: true,
     });
-    editor.setFontSize(15)
+
+    pane.setFontSize(15);
+    apply_keybindings(pane);
+}
+
+
+// A second pane onto another file. Ace calls these splits.
+function toggle_split() {
+    if (!editorSplit) {
+        return;
+    }
+
+    if (editorSplit.getSplits() > 1) {
+        editorSplit.setSplits(1);
+        editor = editorSplit.getEditor(0);
+    } else {
+        editorSplit.setSplits(2);
+
+        const second = editorSplit.getEditor(1);
+        configure_pane(second);
+
+        // Put a different file in the new pane if there is one to show.
+        let other = null;
+
+        for (let i = 0; i < open_file_data.length; i++) {
+            if (open_file_data[i].path !== openPath) {
+                other = open_file_data[i];
+                break;
+            }
+        }
+
+        if (!other) {
+            other = find_open_file(openPath);
+        }
+
+        if (other) {
+            second.setSession(session_for(other));
+        }
+    }
+
+    editorSplit.resize(true);
+    refresh_status();
+}
+
+
+function loadEditor() {
+    ace.require("ace/ext/language_tools");
+
+    const Split = ace.require('ace/split').Split;
+
+    editorSplit = new Split(document.getElementById('editor'), 'ace/theme/tomorrow_night', 1);
+    editor = editorSplit.getEditor(0);
+    configure_pane(editor);
+
+    // Follow whichever pane the caret is in, so the toolbar and the status bar
+    // always describe what is actually being typed into.
+    editorSplit.on('focus', (pane) => {
+        editor = pane;
+        refresh_status();
+    });
 
     // Resize with the window.
-    window.addEventListener('resize', () => editor.resize(true));
+    window.addEventListener('resize', () => editorSplit.resize(true));
 
     console.log("Editor Loaded!");
 }
