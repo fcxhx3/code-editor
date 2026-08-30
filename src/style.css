@@ -248,9 +248,75 @@ body {
   background-color: #24705F;
 }
 
-#editor { 
+#tabs {
   position: absolute;
   top: 4vh;
+  left: 15vw;
+  right: 0;
+  height: 3.5vh;
+  background-color: #0F2B27;
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  max-width: 14vw;
+  padding: 0 0.6vw;
+  font-size: 1.5vh;
+  background-color: #14332E;
+  color: #6F9C90;
+  border-right: 1px solid #0F2B27;
+  cursor: pointer;
+}
+
+.tab:hover {
+  background-color: #1A443D;
+}
+
+.tab.active {
+  background-color: #1E4A42;
+  color: white;
+}
+
+.tab_name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab_dirty {
+  color: #6FE3C0;
+  margin-right: 0.3vw;
+}
+
+/* Hidden until the tab is hovered or current, so the row stays quiet. */
+.tab_close {
+  margin-left: 0.5vw;
+  color: #6F9C90;
+  visibility: hidden;
+}
+
+.tab:hover .tab_close,
+.tab.active .tab_close {
+  visibility: visible;
+}
+
+.tab_close:hover {
+  color: white;
+}
+
+#editor { 
+  position: absolute;
+  top: 7.5vh;
   right: 0;
   bottom: 3vh;
   left: 15vw;

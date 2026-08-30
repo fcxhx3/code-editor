@@ -69,6 +69,7 @@ npm run make
 - [x] Inline syntax error markers, with jump to next problem
 - [x] Keybinding presets for vim, emacs, sublime and vs code
 - [x] Split view, two files side by side
+- [x] Editor tabs above the editor
 
 ### Timer
 - [x] Reset and pause controls
@@ -78,3 +79,4 @@ npm run make
 ### Tidy up
 - [x] Rename nerd_text
 - [x] Finish or delete the commented out folder stub in index.html
+- [x] Break file_manager.js up, it was doing five jobs at once

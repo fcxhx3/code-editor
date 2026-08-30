@@ -290,6 +290,7 @@ function open_in_editor(path) {
     openPath = path;
     set_active_file(path);
     refresh_status();
+    show_tabs();
     save_session();
 }
 
