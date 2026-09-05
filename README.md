@@ -80,3 +80,8 @@ npm run make
 - [x] Rename nerd_text
 - [x] Finish or delete the commented out folder stub in index.html
 - [x] Break file_manager.js up, it was doing five jobs at once
+
+### Settings
+- [x] Remember the theme and font size between runs
+- [x] Remember the keybinding preset
+- [x] Remember whether word wrap was on

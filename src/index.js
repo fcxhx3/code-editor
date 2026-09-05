@@ -107,7 +107,7 @@ const createWindow = () => {
     event.preventDefault();
 
     // Flush the timer totals before anything else can stop the window closing.
-    mainWindow.webContents.executeJavaScript('save_time_state(); save_session();').catch(() => {});
+    mainWindow.webContents.executeJavaScript('save_time_state(); save_session(); save_settings();').catch(() => {});
 
     const quit = () => {
       allowClose = true;

@@ -259,6 +259,7 @@ function updateTimer() {
     if (ticksSinceSave >= 15) {
         ticksSinceSave = 0;
         save_time_state();
+        save_settings();
     }
 }
 

@@ -105,6 +105,8 @@ function set_keybindings(name) {
     if (editor) {
         editor.focus();
     }
+
+    save_settings();
 }
 
 
@@ -243,6 +245,7 @@ function toggle_word_wrap() {
     }
 
     sync_wrap_button();
+    save_settings();
 }
 
 
@@ -446,7 +449,7 @@ function configure_pane(pane) {
         enableLiveAutocompletion: true,
     });
 
-    pane.setFontSize(15);
+    pane.setFontSize(settings.fontSize);
     apply_keybindings(pane);
 }
 
@@ -495,7 +498,7 @@ function loadEditor() {
 
     const Split = ace.require('ace/split').Split;
 
-    editorSplit = new Split(document.getElementById('editor'), 'ace/theme/tomorrow_night', 1);
+    editorSplit = new Split(document.getElementById('editor'), settings.theme, 1);
     editor = editorSplit.getEditor(0);
     configure_pane(editor);
 
